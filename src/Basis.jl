@@ -1,0 +1,76 @@
+module Basis
+
+export generate_basis_2d,state_index,site_index,site_coords,occ,state_bits_2d!,NN_2d
+
+@inline function site_index(x::Int, y::Int, Lx::Int)
+    return (y - 1) * Lx + x
+end
+
+
+@inline function site_coords(site::Int, Lx::Int)
+    y = (site - 1) ÷ Lx + 1
+    x = (site - 1) % Lx + 1
+    return x, y
+end
+
+@inline occ(state::Int, site::Int) = (state >> (site - 1)) & 1
+
+
+function generate_basis_2d(Lx::Int,Ly::Int,N::Int)   #Gosper’s hack
+    L = Lx * Ly
+    N > L && error("N >>L")
+
+    basis = Vector{Int}()
+    state =(1<<N) - 1
+    limit =1<< L
+    while state<limit
+        push!(basis, state)
+        c=state & -state
+        r=state + c
+        state=(((r ⊻ state) >> 2) ÷ c) | r
+    end
+    return basis
+end
+
+function state_index(basis::Vector{Int})
+    idx = Dict{Int,Int}()
+    sizehint!(idx, length(basis))   # pre-allocate hash table
+
+    @inbounds for i in eachindex(basis)
+        idx[basis[i]] = i
+    end
+    return idx
+end
+
+
+function state_bits_2d!(occ_mat::Matrix{Int},state::Int,Lx::Int,Ly::Int)
+    @inbounds for y in 1:Ly, x in 1:Lx
+        site = (y - 1) * Lx + x
+        occ_mat[x, y] = (state >> (site - 1)) & 1
+    end
+    return nothing
+end
+
+@inline function NN_2d(x::Int, y::Int,Lx::Int, Ly::Int;periodic::Bool=false)
+
+    nbrs = Tuple{Int,Int}[]
+
+    x > 1  && push!(nbrs, (x - 1, y))
+    x < Lx && push!(nbrs, (x + 1, y))
+    y > 1  && push!(nbrs, (x, y - 1))
+    y < Ly && push!(nbrs, (x, y + 1))
+
+    if periodic
+        x == 1  && push!(nbrs, (Lx, y))
+        x == Lx && push!(nbrs, (1, y))
+        y == 1  && push!(nbrs, (x, Ly))
+        y == Ly && push!(nbrs, (x, 1))
+    end
+
+    return nbrs
+end
+
+end 
+
+
+

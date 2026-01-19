@@ -1,0 +1,8 @@
+4     #L
+2     #d=Ly
+1.0    #Jx,Jy
+1.2    #Jz
+40     # lannczos vectos
+0.0    #disorder strength
+6759   #seed
+121212   #flag for initial state 194264=random,121212=neel
