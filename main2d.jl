@@ -1,7 +1,7 @@
 ####################################################################
-#           computes krylov complexity
-#               by   Prabhakar
-#                  8/JAN/2026
+#             written  by Prabhakar
+#               IIT Bombay   
+#           
 ####################################################################
 using Random
 # using MPI
@@ -15,12 +15,14 @@ using LinearAlgebra
 include("src/Basis.jl")
 include("src/Hamiltonian.jl")
 include("src/Lanczos.jl")
+include("src/HtimesV.jl")
 include("src/krylov_time_evolution.jl")
 
 using .Basis
 using .Hamiltonian
 using .Lanczos
 using .KrylovTimeEvolution
+using .HXV
 
 function disorder(rng, L::Int, W::Float64)
     return rand(rng,L) .* W .- W/2
@@ -94,31 +96,22 @@ pairs = NN_2d(L,d;periodic=false)
 
 
 
+#-------------build hamiltonina in csr format--------------
+# H=build_hamiltonian(basis,index,pairs,t,U)
+#------------------------------------------------------------
 
-H=build_hamiltonian(basis,index,pairs,t,U)
+#--------------------------full dense mat---------------------
+# H_dense=Matrix(H)       
+# F=eigen(H_dense)  
+#-------------------------------------------------------------
 
 
 
-# applyH!(out, v) = apply_xxz!(out,v,basis,index,L,J,delta,h)
+applyH!(out, v) = apply_ham!(out,v,basis,index,pairs,t,U)
 
-# if init_flag==194264
-#     eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:random)
-#     evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="random",seed,L,J,delta)
+eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:random)
+evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="random",seed,L,d,t,U)
 
-# elseif init_flag==121212
-#     psi00 = zeros(Float64,dim)
-#     ino=index[neel_state(L)]
-#     # println(ino)
-#     psi00[ino]=1.0
-
-#     eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:neel,v0=psi00)
-#     evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="neel",seed,L,J,delta)
-# end
-
-# println("Ground-state energy = ",minimum(eigvals))
-# println(basis)                    
-# state = basis[2]
-# println(state_bits(682, L))
 
 
 

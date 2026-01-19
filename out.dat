@@ -1,0 +1,11 @@
+L X d             =12,2
+t                 =1.0
+U                 =1.2
+Lanczos vectors m =40
+ W                =0.0
+Seed              =6759
+Nup               =12
+Sz                =0.0
+initial state     =121212
+dimension = 2704156
+[1 0; 1 0; 1 0; 1 0; 1 0; 1 0; 1 0; 1 0; 1 0; 1 0; 1 0; 1 0]

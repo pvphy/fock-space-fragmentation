@@ -1,7 +1,6 @@
 module Hamiltonian
     using SparseArrays
-    include("Basis.jl")
-    using .Basis
+    using ..Basis
 
     export build_hamiltonian
 
