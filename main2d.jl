@@ -77,7 +77,7 @@ rng=MersenneTwister(seed)
 h=disorder(rng,L,W)
 
 
-basis=generate_basis_2d(L,d,Nup)
+basis=generate_basis(L,d,Nup)
 index=state_index(basis)
 dim=length(basis)
 
@@ -90,12 +90,12 @@ state_bits_2d!(occ,state,L,d)
 
 println(occ)
 
+pairs = NN_2d(L,d;periodic=false)
 
 
 
-pairs = NN_2d(Lx, Ly; periodic=false)
 
-H = build_hamiltonian_sparse(basis, index, pairs, t, V)
+H=build_hamiltonian(basis,index,pairs,t,U)
 
 
 

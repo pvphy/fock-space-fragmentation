@@ -1,6 +1,6 @@
 module Basis
 
-export generate_basis_2d,state_index,site_index,site_coords,occ,state_bits_2d!,NN_2d
+export generate_basis,state_index,site_index,site_coords,occ,state_bits_2d!,NN_2d
 
 @inline function site_index(x::Int, y::Int, Lx::Int)
     return (y - 1) * Lx + x
@@ -16,7 +16,7 @@ end
 @inline occ(state::Int, site::Int) = (state >> (site - 1)) & 1
 
 
-function generate_basis_2d(Lx::Int,Ly::Int,N::Int)   #Gosper’s hack
+function generate_basis(Lx::Int,Ly::Int,N::Int)   #Gosper’s hack
     L = Lx * Ly
     N > L && error("N >>L")
 
@@ -51,24 +51,30 @@ function state_bits_2d!(occ_mat::Matrix{Int},state::Int,Lx::Int,Ly::Int)
     return nothing
 end
 
-@inline function NN_2d(x::Int, y::Int,Lx::Int, Ly::Int;periodic::Bool=false)
+function NN_2d(Lx::Int, Ly::Int; periodic::Bool=false)
+    pairs = Tuple{Int,Int}[]
 
-    nbrs = Tuple{Int,Int}[]
+    for y in 1:Ly, x in 1:Lx
+        i = (y - 1) * Lx + x
 
-    x > 1  && push!(nbrs, (x - 1, y))
-    x < Lx && push!(nbrs, (x + 1, y))
-    y > 1  && push!(nbrs, (x, y - 1))
-    y < Ly && push!(nbrs, (x, y + 1))
+        # right neighbor
+        if x < Lx
+            push!(pairs, (i, i + 1))
+        elseif periodic
+            push!(pairs, (i, (y - 1) * Lx + 1))
+        end
 
-    if periodic
-        x == 1  && push!(nbrs, (Lx, y))
-        x == Lx && push!(nbrs, (1, y))
-        y == 1  && push!(nbrs, (x, Ly))
-        y == Ly && push!(nbrs, (x, 1))
+        # up neighbor
+        if y < Ly
+            push!(pairs, (i, i + Lx))
+        elseif periodic
+            push!(pairs, (x))
+        end
     end
 
-    return nbrs
+    return pairs
 end
+
 
 end 
 
