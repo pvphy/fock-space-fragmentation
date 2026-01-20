@@ -28,7 +28,7 @@ function disorder(rng, L::Int, W::Float64)
     return rand(rng,L) .* W .- W/2
 end
 
-function neel_state(L)
+function neel_state(L,d)
     state1 = 0
     for i in 1:L
         if isodd(i)
