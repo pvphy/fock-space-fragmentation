@@ -28,15 +28,22 @@ function disorder(rng, L::Int, W::Float64)
     return rand(rng,L) .* W .- W/2
 end
 
-function neel_state(L,d)
-    state1 = 0
-    for i in 1:L
-        if isodd(i)
-            state1 |= (1 << (L - i))
+function neel_state(Lx, Ly)
+    state=0
+for y in 1:Ly
+    for x in 1:Lx
+        if isodd(x + y)
+            site = (y - 1) * Lx + x
+            state |= 1 << (site - 1)
+           
         end
     end
-    return state1
 end
+    return state
+end
+
+
+
 
 function read_input_file(filename)
     values = Float64[]
@@ -85,12 +92,13 @@ dim=length(basis)
 
 println("dimension = ",dim)
 
+# for i in 1:dim
+#     state = basis[24]
+#     occ = zeros(Int,L,d)      
+#     state_bits_2d!(occ,state,L,d)
 
-state = basis[1]
-occ = zeros(Int,L,d)      
-state_bits_2d!(occ,state,L,d)
-
-println(occ)
+#     println(occ)
+# end
 
 pairs = NN_2d(L,d;periodic=false)
 
@@ -109,11 +117,27 @@ pairs = NN_2d(L,d;periodic=false)
 
 applyH!(out, v) = apply_ham!(out,v,basis,index,pairs,t,U)
 
-eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:random)
-evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="random",seed,L,d,t,U)
+# eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:random)
+# evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="random",seed,L,d,t,U)
 
 
 
+psi00 = zeros(Float64,dim)
+state = neel_state(L, d)
+
+occ = zeros(Int, L, d)
+state_bits_2d!(occ, state, L, d)
+
+println(occ)
+for y in 1:d
+    println("y=",occ[:, y])
+end
+ino=index[neel_state(L,d)]
+psi00[ino]=1.0
+
+
+eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:neel,v0=psi00)
+evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="neel",seed,L,d,t,U)
 
 
 
