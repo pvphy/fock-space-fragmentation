@@ -17,12 +17,14 @@ include("src/Hamiltonian.jl")
 include("src/Lanczos.jl")
 include("src/HtimesV.jl")
 include("src/krylov_time_evolution.jl")
+include("src/imbalance.jl")
 
 using .Basis
 using .Hamiltonian
 using .Lanczos
 using .KrylovTimeEvolution
 using .HXV
+using .imbalance
 
 function disorder(rng, L::Int, W::Float64)
     return rand(rng,L) .* W .- W/2
@@ -92,15 +94,27 @@ dim=length(basis)
 
 println("dimension = ",dim)
 
-# for i in 1:dim
-#     state = basis[24]
-#     occ = zeros(Int,L,d)      
-#     state_bits_2d!(occ,state,L,d)
-
-#     println(occ)
-# end
 
 pairs = NN_2d(L,d;periodic=false)
+
+
+
+
+
+H=build_hamiltonian(basis,index,pairs,t,U)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -114,33 +128,34 @@ pairs = NN_2d(L,d;periodic=false)
 #-------------------------------------------------------------
 
 
+#-------------------------------krylov comlexity-------------------------------------
 
-applyH!(out, v) = apply_ham!(out,v,basis,index,pairs,t,U)
+#applyH!(out, v) = apply_ham!(out,v,basis,index,pairs,t,U)
 
 # eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:random)
 # evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="random",seed,L,d,t,U)
 
+#--------------------------neel------------------------------------------------
+
+# psi00 = zeros(Float64,dim)
+# state = neel_state(L, d)
+
+# occ = zeros(Int, L, d)
+# state_bits_2d!(occ, state, L, d)
+
+# println(occ)
+# for y in 1:d
+#     println("y=",occ[:, y])
+# end
+# ino=index[neel_state(L,d)]
+# psi00[ino]=1.0
 
 
-psi00 = zeros(Float64,dim)
-state = neel_state(L, d)
-
-occ = zeros(Int, L, d)
-state_bits_2d!(occ, state, L, d)
-
-println(occ)
-for y in 1:d
-    println("y=",occ[:, y])
-end
-ino=index[neel_state(L,d)]
-psi00[ino]=1.0
+# eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:neel,v0=psi00)
+# evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="neel",seed,L,d,t,U)
 
 
-eigvals,kry_ham=lanczos(applyH!,dim;m=m,rng=rng,init=:neel,v0=psi00)
-evolve_krylov(kry_ham;tmin=0.0,tmax=100.0,Nt=400,prefix="neel",seed,L,d,t,U)
-
-
-
+#--------------------------------------------------------------------------------
 
 
 
